@@ -8,17 +8,27 @@ module Card
     }.freeze
 
     def detect_network(card_number)
-      return nil unless card_number =~ /^[0-9]*$/
+      return nil unless valid_card?(card_number)
 
-      network = detect_diners_club(card_number) if card_number.length == 14
-      network ||= detect_american_express(card_number) if card_number.length == 15
-      network ||= detect_visa(card_number) if card_number.length == 13 ||card_number.length == 19
-      network ||= detect_mastercard_or_visa(card_number) if card_number.length == 16
+      network = case card_number.length
+                when 14
+                  detect_diners_club(card_number)
+                when 15
+                  detect_american_express(card_number)
+                when 16
+                  detect_mastercard_or_visa(card_number)
+                when 13, 19
+                  detect_visa(card_number)
+      end
 
       network ? NETWORKS[network] : nil
     end
 
     private
+
+    def valid_card?(card_number)
+      card_number =~ /^[0-9]*$/
+    end
 
     def detect_diners_club(card_number)
       codes = %w[38 39]
